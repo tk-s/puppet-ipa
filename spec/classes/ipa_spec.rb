@@ -4,13 +4,14 @@ describe 'ipa', :type => :class do
   describe "on RedHat platform" do
     let(:facts) { { :osfamily => 'RedHat',
         :ipa_adminhomedir => '/ipa/home',
+        :ipa_replicascheme => '',
+        :ipa_adminuidnumber => 450,
         :ipaddress => '123.456.678.001',
         :lsbdistdescription => ''
       } }
 
     context 'with master => true' do
       describe "ipa" do
-        let(:name) { 'ipa.master' }
         let(:params) {
           {
             :master  => true,
@@ -28,11 +29,17 @@ describe 'ipa', :type => :class do
   end
 
   describe "on Debian platform" do
-    let(:facts) { { :osfamily => 'Debian', :fqdn => 'master.test.domain.org' } }
+    let(:facts) { { :osfamily => 'Debian',
+        :ipa_adminhomedir => '/ipa/home',
+        :ipa_replicascheme => '',
+        :ipa_adminuidnumber => 450,
+        :ipaddress => '123.456.678.001',
+        :lsbdistdescription => '',
+        :manufacturer => ''
+      } }
 
-    context 'with master => false, client => true' do
+    context 'with client => true' do
       describe "ipa" do
-        let(:name) { 'ipa.master' }
         let(:params) {
           {
             :master  => false,

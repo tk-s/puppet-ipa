@@ -1,6 +1,6 @@
 fixtures:
-  repositories:
-    stdlib: git://github.com/puppetlabs/puppetlabs-stdlib.git
-    firewall: git://github.com/puppetlabs/puppetlabs-firewall.git
+  forge_modules:
+    firewall: "puppetlabs/firewall"
+    stdlib: "puppetlabs/stdlib"
   symlinks:
     ipa: "#{source_dir}"

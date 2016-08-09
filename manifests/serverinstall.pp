@@ -3,15 +3,15 @@
 # Installs an IPA server
 define ipa::serverinstall (
   $host          = $name,
-  $realm         = {},
-  $domain        = {},
-  $adminpw       = {},
-  $dspw          = {},
-  $dnsopt        = {},
-  $forwarderopts = {},
-  $ntpopt        = {},
-  $extcaopt      = {},
-  $idstart       = {}
+  $realm         = { },
+  $domain        = { },
+  $adminpw       = { },
+  $dspw          = { },
+  $dnsopt        = undef,
+  $forwarderopts = undef,
+  $ntpopt        = { },
+  $extcaopt      = { },
+  $idstart       = { }
 ) {
 
   $idstartopt = "--idstart=${idstart}"
@@ -24,22 +24,22 @@ define ipa::serverinstall (
     unless    => '/usr/sbin/ipactl status >/dev/null 2>&1',
     creates   => '/etc/ipa/default.conf',
     notify    => Ipa::Flushcache["server-${host}"],
-    logoutput => 'on_failure'
+    logoutput => 'on_failure',
   }
 
   ipa::flushcache { "server-${host}":
     notify  => Ipa::Adminconfig[$host],
-    require => Anchor['ipa::serverinstall::start']
+    require => Anchor['ipa::serverinstall::start'],
   }
 
   ipa::adminconfig { $host:
     realm   => $realm,
     idstart => $idstart,
-    require => Anchor['ipa::serverinstall::start']
+    require => Anchor['ipa::serverinstall::start'],
   }
 
   anchor { 'ipa::serverinstall::end':
-    require => [Ipa::Flushcache["server-${host}"], Ipa::Adminconfig[$host]]
+    require => [Ipa::Flushcache["server-${host}"], Ipa::Adminconfig[$host]],
   }
 
 }

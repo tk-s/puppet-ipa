@@ -1,5 +1,5 @@
 # IPA Puppet module
-[![Build Status](https://travis-ci.org/huit/puppet-ipa.png?branch=master)](https://travis-ci.org/huit/puppet-ipa)
+[![Build Status](https://travis-ci.org/tk-s/puppet-ipa.svg?branch=master)](https://travis-ci.org/tk-s/puppet-ipa)
 
 ## Overview
 

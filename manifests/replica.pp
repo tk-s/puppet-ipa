@@ -11,12 +11,12 @@
 # Sample Usage:
 #
 class ipa::replica (
-  $svrpkg      = {},
-  $adminpw     = {},
-  $dspw        = {},
-  $domain      = {},
-  $kstart      = {},
-  $sssd        = {}
+  $svrpkg      = { },
+  $adminpw     = { },
+  $dspw        = { },
+  $domain      = { },
+  $kstart      = { },
+  $sssd        = { }
 ) {
 
   Class['ipa::client'] -> Ipa::Masterprincipal <<| tag == "ipa-master-principal-${ipa::replica::domain}" |>> -> Ipa::Replicapreparefirewall <<| tag == "ipa-replica-prepare-firewall-${ipa::replica::domain}" |>> -> Ipa::Masterreplicationfirewall <<| tag == "ipa-master-replication-firewall-${ipa::replica::domain}" |>> -> Ipa::Replicainstall[$::fqdn] -> Service['ipa']
@@ -46,29 +46,29 @@ class ipa::replica (
     ensure => 'present',
     action => 'accept',
     proto  => 'tcp',
-    dport  => ['88','389','464','636']
+    dport  => ['88','389','464','636'],
   }
 
   firewall { '102 allow IPA replica UDP services (kerberos,kpasswd,ntp)':
     ensure => 'present',
     action => 'accept',
     proto  => 'udp',
-    dport  => ['88','123','464']
+    dport  => ['88','123','464'],
   }
 
   ipa::replicainstall { $::fqdn:
     adminpw => $ipa::replica::adminpw,
     dspw    => $ipa::replica::dspw,
-    require => Package[$ipa::replica::svrpkg]
+    require => Package[$ipa::replica::svrpkg],
   }
 
   @@ipa::replicareplicationfirewall { $::fqdn:
     source => $::ipaddress,
-    tag    => "ipa-replica-replication-firewall-${ipa::replica::domain}"
+    tag    => "ipa-replica-replication-firewall-${ipa::replica::domain}",
   }
 
   @@ipa::replicaprepare { $::fqdn:
     dspw => $ipa::replica::dspw,
-    tag  => "ipa-replica-prepare-${ipa::replica::domain}"
+    tag  => "ipa-replica-prepare-${ipa::replica::domain}",
   }
 }

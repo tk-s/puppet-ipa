@@ -1,7 +1,7 @@
 define ipa::adminconfig (
   $host    = $name,
-  $idstart = {},
-  $realm   = {},
+  $idstart = { },
+  $realm   = { },
 ) {
 
   $adminuidnumber = is_numeric($::ipa_adminuidnumber) ? {
@@ -17,7 +17,7 @@ define ipa::adminconfig (
   k5login { "${adminhomedir}/.k5login":
     principals => $ipa::master::principals,
     notify     => File["${adminhomedir}/.k5login"],
-    require    => File[$adminhomedir]
+    require    => File[$adminhomedir],
   }
 
   $kadminlocalcmd = shellquote('/usr/sbin/kadmin.local','-q',"ktadd -norandkey -k ${adminhomedir}/admin.keytab admin")
@@ -29,14 +29,14 @@ define ipa::adminconfig (
     cwd     => $adminhomedir,
     unless  => shellquote('/usr/bin/kvno','-k',"${adminhomedir}/admin.keytab","admin@${realm}"),
     notify  => File["${adminhomedir}/admin.keytab"],
-    require => Cron['k5start_admin']
+    require => Cron['k5start_admin'],
   }
 
   cron { 'k5start_admin':
     command => "/usr/bin/k5start -f ${adminhomedir}/admin.keytab -U > /dev/null 2>&1",
     user    => 'admin',
     minute  => '*/1',
-    require => [Package['kstart'], K5login["${adminhomedir}/.k5login"], File[$adminhomedir]]
+    require => [Package['kstart'], K5login["${adminhomedir}/.k5login"], File[$adminhomedir]],
   }
 
   file { $adminhomedir:
@@ -46,19 +46,19 @@ define ipa::adminconfig (
     group   => $adminuidnumber,
     recurse => true,
     notify  => Exec['admin_keytab'],
-    require => Exec["serverinstall-${host}"]
+    require => Exec["serverinstall-${host}"],
   }
 
   file { "${adminhomedir}/.k5login":
     owner   => $adminuidnumber,
     group   => $adminuidnumber,
-    require => File[$adminhomedir]
+    require => File[$adminhomedir],
   }
 
   file { "${adminhomedir}/admin.keytab":
     owner   => $adminuidnumber,
     group   => $adminuidnumber,
     mode    => '0600',
-    require => File[$adminhomedir]
+    require => File[$adminhomedir],
   }
 }

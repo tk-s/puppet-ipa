@@ -14,7 +14,7 @@ define ipa::serviceadd (
     $parsed_principal = $principal
   }
 
-  Ipa::Hostadd<||> -> Exec["serviceadd-${parsed_principal}"]
+  Ipa::Hostadd <| tag == 'ipa' |> -> Exec["serviceadd-${parsed_principal}"]
 
   exec { "serviceadd-${parsed_principal}":
     command   => "/sbin/runuser -l admin -c \'/usr/bin/ipa service-add ${parsed_principal} --force \'",

@@ -2,13 +2,13 @@
 #
 # Cleans up an IPA installation
 define ipa::cleanup (
-  $svrpkg  = {},
-  $clntpkg = {}
+  $svrpkg  = { },
+  $clntpkg = { }
 ) {
 
   $pkgrmcmd = $::osfamily ? {
-    RedHat => '/usr/bin/yum -y remove',
-    Debian => '/usr/bin/aptitude -y purge'
+    'RedHat' => '/usr/bin/yum -y remove',
+    'Debian' => '/usr/bin/aptitude -y purge'
   }
 
   $pkgcmd = regsubst($pkgrmcmd,'\s.*$','')
@@ -26,12 +26,12 @@ define ipa::cleanup (
                  if [ -e /etc/krb5.conf.ipabkp ]; then /bin/cp -f /etc/krb5.conf.ipabkp /etc/krb5.conf ; fi ;\
                  if [ -e /etc/krb5.keytab ]; then /bin/mv -f /etc/krb5.keytab /etc/krb5.keytab.puppet-ipa.cleanup ; fi ;\
                  if [ -e /root/ipa.csr ]; then /bin/mv -f /root/ipa.csr /root/ipa.csr.$(/bin/date +%s) ; fi ;\
-                 if [ -d /var/lib/certmonger ]; then find /var/lib/certmonger -type f -exec /bin/rm -f '{}' \; ; fi ;\
-                 if [ -d /var/lib/ipa ]; then /usr/bin/find /var/lib/ipa -type f -exec /bin/rm -f '{}' \; ; fi ;\
-                 if [ -d /var/lib/ipa-client ]; then /usr/bin/find /var/lib/ipa-client -type f -exec /bin/rm -f '{}' \; ; fi ;\
-                 if [ -d /etc/ipa ]; then /usr/bin/find /etc/ipa -type f -exec /bin/rm -f '{}' \; ; fi\"",
+                 if [ -d /var/lib/certmonger ]; then find /var/lib/certmonger -type f -exec /bin/rm -f '{}' \\; ; fi ;\
+                 if [ -d /var/lib/ipa ]; then /usr/bin/find /var/lib/ipa -type f -exec /bin/rm -f '{}' \\; ; fi ;\
+                 if [ -d /var/lib/ipa-client ]; then /usr/bin/find /var/lib/ipa-client -type f -exec /bin/rm -f '{}' \\; ; fi ;\
+                 if [ -d /etc/ipa ]; then /usr/bin/find /etc/ipa -type f -exec /bin/rm -f '{}' \\; ; fi\"",
     timeout   => '0',
-    logoutput => true
+    logoutput => true,
   }
 
   Cron <|title == 'k5start_root'|> {
@@ -40,5 +40,5 @@ define ipa::cleanup (
   }
 
   notify { 'Running IPA install cleanup, please wait.': } ->
-  cron { 'k5start_admin': ensure  => 'absent';}
+  cron { 'k5start_admin': ensure  => 'absent'; }
 }

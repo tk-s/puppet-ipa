@@ -3,9 +3,9 @@
 # Configures IPA load balancing
 define ipa::loadbalanceconf (
   $host       = $name,
-  $domain     = {},
+  $domain     = { },
   $ipaservers = [],
-  $mkhomedir  = {}
+  $mkhomedir  = { }
 ) {
 
   $dc = prefix([regsubst($domain,'(\.)',',dc=','G')],'dc=')
@@ -23,8 +23,8 @@ define ipa::loadbalanceconf (
       }
 
       exec { "loadbalanceconf-authconfig-${host}":
-        command     => "/usr/sbin/authconfig --nostart --enablesssd --enableldap --ldapserver=${servers} --ldapbasedn=${dc} --krb5kdc=${servers} --krb5adminserver=${servers} ${mkhomediropt} --update",
-        logoutput   => 'on_failure'
+        command   => "/usr/sbin/authconfig --nostart --enablesssd --enableldap --ldapserver=${servers} --ldapbasedn=${dc} --krb5kdc=${servers} --krb5adminserver=${servers} ${mkhomediropt} --update",
+        logoutput => 'on_failure',
       } ~> Ipa::Flushcache["loadbalanceconf-flushcache-${host}"]
     }
   }

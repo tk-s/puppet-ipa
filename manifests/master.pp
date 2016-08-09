@@ -11,34 +11,34 @@
 # Sample Usage:
 #
 class ipa::master (
-  $svrpkg        = {},
-  $dns           = {},
+  $svrpkg        = { },
+  $dns           = { },
   $forwarders    = [],
-  $realm         = {},
-  $domain        = {},
+  $realm         = { },
+  $domain        = { },
   $ipaservers    = [],
-  $loadbalance   = {},
-  $adminpw       = {},
-  $dspw          = {},
-  $sudo          = {},
-  $sudopw        = {},
-  $automount     = {},
-  $autofs        = {},
-  $kstart        = {},
-  $sssd          = {},
-  $ntp           = {},
-  $extca         = {},
-  $extcertpath   = {},
-  $extcert       = {},
-  $extcacertpath = {},
-  $extcacert     = {},
-  $dirsrv_pkcs12 = {},
-  $http_pkcs12   = {},
-  $dirsrv_pin    = {},
-  $http_pin      = {},
-  $subject       = {},
-  $selfsign      = {},
-  $idstart       = {}
+  $loadbalance   = { },
+  $adminpw       = { },
+  $dspw          = { },
+  $sudo          = { },
+  $sudopw        = { },
+  $automount     = { },
+  $autofs        = { },
+  $kstart        = { },
+  $sssd          = { },
+  $ntp           = { },
+  $extca         = { },
+  $extcertpath   = { },
+  $extcert       = { },
+  $extcacertpath = { },
+  $extcacert     = { },
+  $dirsrv_pkcs12 = { },
+  $http_pkcs12   = { },
+  $dirsrv_pin    = { },
+  $http_pin      = { },
+  $subject       = { },
+  $selfsign      = { },
+  $idstart       = { }
 ) {
 
   Ipa::Serverinstall[$::fqdn] ->  File['/etc/ipa/primary'] -> Ipa::Hostadd <<| |>> -> Ipa::Replicareplicationfirewall <<| tag == "ipa-replica-replication-firewall-${ipa::master::domain}" |>> -> Ipa::Replicaprepare <<| tag == "ipa-replica-prepare-${ipa::master::domain}" |>> -> Ipa::Createreplicas[$::fqdn]
@@ -49,14 +49,14 @@ class ipa::master (
 
   file { '/etc/ipa/primary':
     ensure  => 'file',
-    content => 'Added by HUIT IPA Puppet module: designates primary master - do not remove.'
+    content => 'Added by HUIT IPA Puppet module: designates primary master - do not remove.',
   }
 
   if $ipa::master::sudo {
     Ipa::Configsudo <<| |>> {
       name    => $::fqdn,
       os      => "${::osfamily}${::lsbmajdistrelease}",
-      require => Ipa::Serverinstall[$::fqdn]
+      require => Ipa::Serverinstall[$::fqdn],
     }
   }
 
@@ -70,14 +70,14 @@ class ipa::master (
       name    => $::fqdn,
       os      => $::osfamily,
       notify  => Service['autofs'],
-      require => Ipa::Serverinstall[$::fqdn]
+      require => Ipa::Serverinstall[$::fqdn],
     }
   }
 
   $principals = suffix(prefix([$::fqdn], 'host/'), "@${ipa::master::realm}")
 
   if $::osfamily != 'RedHat' {
-    fail("Cannot configure an IPA master server on ${::operatingsystem} operating systems. Must be a RedHat-like operating system.")
+    fail("Cannot configure an IPA master server on ${::osfamily} operating systems. Must be a RedHat-like operating system.")
   }
 
   realize Package[$ipa::master::svrpkg]
@@ -91,6 +91,9 @@ class ipa::master (
     realize Package['kstart']
   }
 
+  $dnsopt = undef
+  $forwarderopts = undef
+
   if $ipa::master::dns {
     if size($ipa::master::forwarders) > 0 {
       $forwarderopts = join(prefix($ipa::master::forwarders, '--forwarder '), ' ')
@@ -100,10 +103,6 @@ class ipa::master (
     }
     $dnsopt = '--setup-dns'
     realize Package['bind-dyndb-ldap']
-  }
-  else {
-    $dnsopt = ''
-    $forwarderopts = ''
   }
 
   $ntpopt = $ipa::master::ntp ? {
@@ -133,11 +132,11 @@ class ipa::master (
     ntpopt        => $ipa::master::ntpopt,
     extcaopt      => $ipa::master::extcaopt,
     idstart       => $ipa::master::generated_idstart,
-    require       => Package[$ipa::master::svrpkg]
+    require       => Package[$ipa::master::svrpkg],
   }
 
   if $extca {
-    class { 'ipa::master_extca':
+    class { '::ipa::master_extca':
       extcertpath   => $ipa::master::extcertpath,
       extcert       => $ipa::master::extcert,
       extcacertpath => $ipa::master::extcacertpath,
@@ -148,11 +147,11 @@ class ipa::master (
       http_pin      => $ipa::master::http_pin,
       subject       => $ipa::master::subject,
       selfsign      => $ipa::master::selfsign,
-      require       => Ipa::Serverinstall[$::fqdn]
+      require       => Ipa::Serverinstall[$::fqdn],
     }
   } else {
-    class { 'ipa::service':
-      require => Ipa::Serverinstall[$::fqdn]
+    class { '::ipa::service':
+      require => Ipa::Serverinstall[$::fqdn],
     }
   }
 
@@ -163,29 +162,29 @@ class ipa::master (
     ensure => 'present',
     action => 'accept',
     proto  => 'tcp',
-    dport  => ['80','88','389','443','464','636']
+    dport  => ['80','88','389','443','464','636'],
   }
 
   firewall { '102 allow IPA master UDP services (kerberos,kpasswd,ntp)':
     ensure => 'present',
     action => 'accept',
     proto  => 'udp',
-    dport  => ['88','123','464']
+    dport  => ['88','123','464'],
   }
 
   @@ipa::replicapreparefirewall { $::fqdn:
     source => $::ipaddress,
-    tag    => "ipa-replica-prepare-firewall-${ipa::master::domain}"
+    tag    => "ipa-replica-prepare-firewall-${ipa::master::domain}",
   }
 
   @@ipa::masterreplicationfirewall { $::fqdn:
     source => $::ipaddress,
-    tag    => "ipa-master-replication-firewall-${ipa::master::domain}"
+    tag    => "ipa-master-replication-firewall-${ipa::master::domain}",
   }
 
   @@ipa::masterprincipal { $::fqdn:
     realm => $ipa::master::realm,
-    tag   => "ipa-master-principal-${ipa::master::domain}"
+    tag   => "ipa-master-principal-${ipa::master::domain}",
   }
 
   @@ipa::clientinstall { $::fqdn:
@@ -195,7 +194,8 @@ class ipa::master (
     adminpw    => $ipa::master::adminpw,
     otp        => '',
     mkhomedir  => '',
-    ntp        => ''
+    ntp        => '',
+    tag        => 'ipa',
   }
 
   if $ipa::master::sudo {
@@ -203,7 +203,7 @@ class ipa::master (
       masterfqdn => $::fqdn,
       domain     => $ipa::master::domain,
       adminpw    => $ipa::master::adminpw,
-      sudopw     => $ipa::master::sudopw
+      sudopw     => $ipa::master::sudopw,
     }
   }
 
@@ -212,7 +212,7 @@ class ipa::master (
       masterfqdn => $::fqdn,
       os         => $::osfamily,
       domain     => $ipa::master::domain,
-      realm      => $ipa::master::realm
+      realm      => $ipa::master::realm,
     }
   }
 
@@ -221,7 +221,7 @@ class ipa::master (
       domain     => $ipa::master::domain,
       ipaservers => $ipa::master::ipaservers,
       mkhomedir  => $ipa::master::mkhomedir,
-      require    => Ipa::Serverinstall[$::fqdn]
+      require    => Ipa::Serverinstall[$::fqdn],
     }
   }
 }

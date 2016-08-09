@@ -11,33 +11,33 @@
 # Sample Usage:
 #
 class ipa::client (
-  $clntpkg       = {},
-  $ldaputils     = {},
-  $ldaputilspkg  = {},
-  $sssdtools     = {},
-  $sssdtoolspkg  = {},
-  $sssd          = {},
+  $clntpkg       = { },
+  $ldaputils     = { },
+  $ldaputilspkg  = { },
+  $sssdtools     = { },
+  $sssdtoolspkg  = { },
+  $sssd          = { },
   $kstart        = true,
-  $client        = {},
-  $domain        = {},
-  $realm         = {},
-  $sudo          = {},
-  $debiansudopkg = {},
-  $automount     = {},
-  $autofs        = {},
-  $otp           = {},
+  $client        = { },
+  $domain        = { },
+  $realm         = { },
+  $sudo          = { },
+  $debiansudopkg = { },
+  $automount     = { },
+  $autofs        = { },
+  $otp           = { },
   $ipaservers    = [],
-  $loadbalance   = {},
+  $loadbalance   = { },
   $mkhomedir     = false,
   $ntp           = false,
   $fixedprimary  = false,
-  $desc          = {},
-  $locality      = {},
-  $location      = {}
+  $desc          = undef,
+  $locality      = undef,
+  $location      = undef
 ) {
 
   if $ipa::client::kstart {
-    Package['kstart'] -> Ipa::Clientinstall<||>
+    Package['kstart'] -> Ipa::Clientinstall <| tag == 'ipa' |>
     realize Package['kstart']
   }
 
@@ -55,7 +55,7 @@ class ipa::client (
     Ipa::Configsudo <<| |>> {
       name    => $::fqdn,
       os      => "${::osfamily}${::lsbmajdistrelease}",
-      require => Ipa::Clientinstall[$::fqdn]
+      require => Ipa::Clientinstall[$::fqdn],
     }
   }
 
@@ -69,7 +69,7 @@ class ipa::client (
       name    => $::fqdn,
       os      => $::osfamily,
       notify  => Service['autofs'],
-      require => Ipa::Clientinstall[$::fqdn]
+      require => Ipa::Clientinstall[$::fqdn],
     }
   }
 
@@ -90,7 +90,7 @@ class ipa::client (
   }
 
   if $ipa::client::sssd {
-    Ipa::Clientinstall<||> -> Service['sssd']
+    Ipa::Clientinstall <| tag == 'ipa' |> -> Service['sssd']
     realize Package['sssd-common']
     realize Service['sssd']
   }
@@ -101,22 +101,22 @@ class ipa::client (
       mode    => '0755',
       owner   => 'root',
       group   => 'root',
-      require => Package[$ipa::client::clntpkg]
+      require => Package[$ipa::client::clntpkg],
     }
 
-    file {'/etc/pki/nssdb':
+    file { '/etc/pki/nssdb':
       ensure  => 'directory',
       mode    => '0755',
       owner   => 'root',
       group   => 'root',
-      require => File['/etc/pki']
+      require => File['/etc/pki'],
     }
 
     File['/etc/pki/nssdb'] -> Ipa::Clientinstall <<| |>>
 
     if $ipa::client::sudo and $ipa::client::debiansudopkg {
       @package { 'sudo-ldap':
-        ensure => installed
+        ensure => installed,
       }
       realize Package['sudo-ldap']
     }
@@ -126,11 +126,11 @@ class ipa::client (
         'mkhomedir_pam' :
           context => '/files/etc/pam.d/common-session',
           changes => ['ins 1000000 after *[last()]',
-                      'set 1000000/type session',
-                      'set 1000000/control required',
-                      'set 1000000/module pam_mkhomedir.so',
-                      'set 1000000/argument umask=0022'],
-          onlyif  => 'match *[type="session"][module="pam_mkhomedir.so"][argument="umask=0022"] size == 0'
+            'set 1000000/type session',
+            'set 1000000/control required',
+            'set 1000000/module pam_mkhomedir.so',
+            'set 1000000/argument umask=0022'],
+          onlyif  => 'match *[type="session"][module="pam_mkhomedir.so"][argument="umask=0022"] size == 0',
       }
     }
   }
@@ -141,7 +141,8 @@ class ipa::client (
     clientos => $::lsbdistdescription,
     clientpf => $::manufacturer,
     locality => $ipa::client::locality,
-    location => $ipa::client::location
+    location => $ipa::client::location,
+    tag      => 'ipa',
   }
 
   if $ipa::client::loadbalance {
@@ -149,7 +150,7 @@ class ipa::client (
       domain     => $ipa::client::domain,
       ipaservers => $ipa::client::ipaservers,
       mkhomedir  => $ipa::client::mkhomedir,
-      require    => Ipa::Clientinstall[$::fqdn]
+      require    => Ipa::Clientinstall[$::fqdn],
     }
   }
 }

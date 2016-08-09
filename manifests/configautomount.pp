@@ -1,9 +1,9 @@
 define ipa::configautomount (
   $host       = $name,
-  $os         = {},
-  $domain     = {},
-  $realm      = {},
-  $masterfqdn = {}
+  $os         = { },
+  $domain     = { },
+  $realm      = { },
+  $masterfqdn = { }
 ) {
 
   Augeas["nsswitch-automount-${host}"] -> Augeas["sysconfig-autofs-${name}"] -> File["autofs_ldap_auth-${host}"]
@@ -11,8 +11,8 @@ define ipa::configautomount (
   $dc = prefix([regsubst($domain,'(\.)',',dc=','G')],'dc=')
 
   $autofspath = $os ? {
-    Debian  => '/etc/default/autofs',
-    default => '/etc/sysconfig/autofs'
+    'Debian'  => '/etc/default/autofs',
+    default => '/etc/sysconfig/autofs',
   }
 
   augeas { "nsswitch-automount-${host}":
@@ -21,7 +21,7 @@ define ipa::configautomount (
       'set database[. = "automount"] automount',
       'set database[. = "automount"]/service[1] files',
       'set database[. = "automount"]/service[2] ldap',
-    ]
+    ],
   }
 
   augeas { "sysconfig-autofs-${name}":
@@ -33,8 +33,8 @@ define ipa::configautomount (
       'set ENTRY_ATTRIBUTE automountKey',
       'set VALUE_ATTRIBUTE automountInformation',
       "set LDAP_URI ldap://${masterfqdn}",
-      "set SEARCH_BASE cn=default,cn=automount,${dc}"
-    ]
+      "set SEARCH_BASE cn=default,cn=automount,${dc}",
+    ],
   }
 
   file { "autofs_ldap_auth-${host}":
@@ -42,6 +42,6 @@ define ipa::configautomount (
     owner   => 'root',
     group   => 'root',
     mode    => '0600',
-    content => template('ipa/autofs_ldap_auth.conf.erb')
+    content => template('ipa/autofs_ldap_auth.conf.erb'),
   }
 }

@@ -3,13 +3,13 @@
 # Installs an IPA client
 define ipa::clientinstall (
   $host         = $name,
-  $masterfqdn   = {},
-  $domain       = {},
-  $realm        = {},
-  $adminpw      = {},
-  $otp          = {},
-  $mkhomedir    = {},
-  $ntp          = {},
+  $masterfqdn   = { },
+  $domain       = { },
+  $realm        = { },
+  $adminpw      = { },
+  $otp          = { },
+  $mkhomedir    = { },
+  $ntp          = { },
   $fixedprimary = false
 ) {
 
@@ -41,7 +41,7 @@ define ipa::clientinstall (
     tries     => '60',
     try_sleep => '90',
     returns   => ['0','1'],
-    logoutput => 'on_failure'
+    logoutput => 'on_failure',
   }
 
   ipa::flushcache { "client-${host}":

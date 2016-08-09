@@ -3,16 +3,16 @@
 # Completes installation an IPA server with an external CA
 define ipa::serverinstall_extca (
   $host             = $name,
-  $adminpw          = {},
-  $dspw             = {},
-  $extcertpath      = {},
-  $extcacertpath    = {},
-  $dirsrv_pkcs12opt = {},
-  $http_pkcs12opt   = {},
-  $dirsrv_pinopt    = {},
-  $http_pinopt      = {},
-  $subjectopt       = {},
-  $selfsignopt      = {}
+  $adminpw          = { },
+  $dspw             = { },
+  $extcertpath      = { },
+  $extcacertpath    = { },
+  $dirsrv_pkcs12opt = { },
+  $http_pkcs12opt   = { },
+  $dirsrv_pinopt    = { },
+  $http_pinopt      = { },
+  $subjectopt       = { },
+  $selfsignopt      = { }
 ) {
 
   exec { "extca_serverinstall-${host}":
@@ -21,7 +21,7 @@ define ipa::serverinstall_extca (
     refreshonly => true,
     notify      => Ipa::Flushcache["server-${host}"],
     require     => File[$extcertpath,$extcacertpath],
-    logoutput   => 'on_failure'
+    logoutput   => 'on_failure',
   }
 
   ipa::flushcache { "server-${host}":

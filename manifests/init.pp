@@ -89,9 +89,9 @@ class ipa (
   $mkhomedir     = false,
   $ntp           = false,
   $kstart        = true,
-  $desc          = '',
-  $locality      = '',
-  $location      = '',
+  $desc          = undef,
+  $locality      = undef,
+  $location      = undef,
   $sssdtools     = true,
   $sssdtoolspkg  = 'sssd-tools',
   $sssd          = true,
@@ -102,82 +102,82 @@ class ipa (
   $autofs        = false,
   $svrpkg        = 'ipa-server',
   $clntpkg       = $::osfamily ? {
-    Debian  => 'freeipa-client',
+    'Debian'  => 'freeipa-client',
     default => 'ipa-client',
   },
   $ldaputils     = true,
   $ldaputilspkg  = $::osfamily ? {
-    Debian  => 'ldap-utils',
+    'Debian'  => 'ldap-utils',
     default => 'openldap-clients',
   },
   $idstart       = false
 ) {
 
   @package { $ipa::svrpkg:
-    ensure => installed
+    ensure => installed,
   }
 
   @package { $ipa::clntpkg:
-    ensure => installed
+    ensure => installed,
   }
 
   if $ipa::ldaputils {
     @package { $ipa::ldaputilspkg:
-      ensure => installed
+      ensure => installed,
     }
   }
 
   if $ipa::sssdtools {
     @package { $ipa::sssdtoolspkg:
-      ensure => installed
+      ensure => installed,
     }
   }
 
   if $ipa::kstart {
     @package { 'kstart':
-      ensure => installed
+      ensure => installed,
     }
   }
 
   @service { 'ipa':
     ensure  => 'running',
     enable  => true,
-    require => Package[$ipa::svrpkg]
+    require => Package[$ipa::svrpkg],
   }
 
   if $ipa::sssd {
     @package { 'sssd-common':
-      ensure => installed
+      ensure => installed,
     }
 
     @service { 'sssd':
       ensure  => 'running',
       enable  => true,
-      require => Package['sssd-common']
+      require => Package['sssd-common'],
     }
   }
 
   if $ipa::dns {
     @package { 'bind-dyndb-ldap':
-      ensure => installed
+      ensure => installed,
     }
   }
 
   if $ipa::mkhomedir and $::osfamily == 'RedHat' and $::lsbmajdistrelease == '6' {
     service { 'oddjobd':
       ensure => 'running',
-      enable => true
+      enable => true,
     }
   }
 
   if $ipa::autofs {
     @package { 'autofs':
-      ensure => installed
+      ensure => installed,
     }
 
     @service { 'autofs':
       ensure => 'running',
-      enable => true
+      enable => true,
     }
   }
 
@@ -185,7 +185,7 @@ class ipa (
     command => '/usr/bin/k5start -f /etc/krb5.keytab -U -o root -k /tmp/krb5cc_0 > /dev/null 2>&1',
     user    => 'root',
     minute  => '*/1',
-    require => Package['kstart']
+    require => Package['kstart'],
   }
 
   if $ipa::master and $ipa::replica {
@@ -225,13 +225,13 @@ class ipa (
     } else {
       ipa::cleanup { $::fqdn:
         svrpkg  => $ipa::svrpkg,
-        clntpkg => $ipa::clntpkg
+        clntpkg => $ipa::clntpkg,
       }
     }
   }
 
   if $ipa::master {
-    class { 'ipa::master':
+    class { '::ipa::master':
       svrpkg        => $ipa::svrpkg,
       dns           => $ipa::dns,
       forwarders    => $ipa::forwarders,
@@ -259,7 +259,7 @@ class ipa (
       http_pin      => $ipa::http_pin,
       subject       => $ipa::subject,
       selfsign      => $ipa::selfsign,
-      idstart       => $ipa::idstart
+      idstart       => $ipa::idstart,
     }
 
     if ! $ipa::adminpw {
@@ -272,16 +272,16 @@ class ipa (
   }
 
   if $ipa::replica {
-    class { 'ipa::replica':
-      svrpkg      => $ipa::svrpkg,
-      domain      => downcase($ipa::domain),
-      adminpw     => $ipa::adminpw,
-      dspw        => $ipa::dspw,
-      kstart      => $ipa::kstart,
-      sssd        => $ipa::sssd
+    class { '::ipa::replica':
+      svrpkg  => $ipa::svrpkg,
+      domain  => downcase($ipa::domain),
+      adminpw => $ipa::adminpw,
+      dspw    => $ipa::dspw,
+      kstart  => $ipa::kstart,
+      sssd    => $ipa::sssd,
     }
 
-    class { 'ipa::client':
+    class { '::ipa::client':
       clntpkg      => $ipa::clntpkg,
       ldaputils    => $ipa::ldaputils,
       ldaputilspkg => $ipa::ldaputilspkg,
@@ -302,7 +302,7 @@ class ipa (
       fixedprimary => $ipa::fixedprimary,
       desc         => $ipa::desc,
       locality     => $ipa::locality,
-      location     => $ipa::location
+      location     => $ipa::location,
     }
 
     if ! $ipa::adminpw {
@@ -319,7 +319,7 @@ class ipa (
   }
 
   if $ipa::client {
-    class { 'ipa::client':
+    class { '::ipa::client':
       clntpkg       => $ipa::clntpkg,
       ldaputils     => $ipa::ldaputils,
       ldaputilspkg  => $ipa::ldaputilspkg,
@@ -340,7 +340,7 @@ class ipa (
       fixedprimary  => $ipa::fixedprimary,
       desc          => $ipa::desc,
       locality      => $ipa::locality,
-      location      => $ipa::location
+      location      => $ipa::location,
     }
 
     if ! $ipa::otp {

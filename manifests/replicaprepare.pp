@@ -1,6 +1,6 @@
 define ipa::replicaprepare (
   $host = $name,
-  $dspw = {}
+  $dspw = { }
 ) {
 
   Cron['k5start_root'] -> Exec["replicaprepare-${host}"] ~> Exec["replica-info-scp-${host}"] ~> Ipa::Hostdelete[$host]
@@ -15,14 +15,14 @@ define ipa::replicaprepare (
   exec { "replicaprepare-${host}":
     command => "${replicapreparecmd} ${host}",
     unless  => "${replicamanagecmd} list | /bin/grep ${host} >/dev/null 2>&1",
-    timeout => '0'
+    timeout => '0',
   }
 
   exec { "replica-info-scp-${host}":
     command     => shellquote('/usr/bin/scp','-q','-o','StrictHostKeyChecking=no','-o','GSSAPIAuthentication=yes','-o','ConnectTimeout=5','-o','ServerAliveInterval=2',$file,"root@${host}:${file}"),
     refreshonly => true,
     tries       => '60',
-    try_sleep   => '60'
+    try_sleep   => '60',
   }
 
   ipa::hostdelete { $host:

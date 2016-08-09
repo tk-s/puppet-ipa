@@ -3,11 +3,11 @@
 # Configures sudoers in LDAP
 define ipa::configsudo (
   $host       = $name,
-  $os         = {},
-  $sudopw     = {},
-  $adminpw    = {},
-  $domain     = {},
-  $masterfqdn = {}
+  $os         = { },
+  $sudopw     = { },
+  $adminpw    = { },
+  $domain     = { },
+  $masterfqdn = { }
 ) {
 
   Augeas["nsswitch-sudoers-${host}"] -> Exec["set-sudopw-${host}"]
@@ -19,8 +19,8 @@ define ipa::configsudo (
     changes => [
       'set database[. = "sudoers"] sudoers',
       'set database[. = "sudoers"]/service[1] files',
-      'set database[. = "sudoers"]/service[2] ldap'
-    ]
+      'set database[. = "sudoers"]/service[2] ldap',
+    ],
   }
 
   if $os == 'RedHat5' {
@@ -34,8 +34,8 @@ define ipa::configsudo (
         'set tls_checkpeer yes',
         'set bind_timelimit 5',
         'set timelimit 15',
-        "set sudoers_base ou=sudoers,${dc}"
-      ]
+        "set sudoers_base ou=sudoers,${dc}",
+      ],
     }
   } else {
     file { "sudo-ldap-${host}":
@@ -43,7 +43,7 @@ define ipa::configsudo (
       owner   => 'root',
       group   => 'root',
       mode    => '0640',
-      content => template('ipa/sudo-ldap.conf.erb')
+      content => template('ipa/sudo-ldap.conf.erb'),
     }
   }
 
@@ -51,12 +51,12 @@ define ipa::configsudo (
     command   => "/bin/bash -c \"LDAPTLS_REQCERT=never /usr/bin/ldappasswd -x -H ldaps://${masterfqdn} -D uid=admin,cn=users,cn=accounts,${dc} -w ${adminpw} -s ${sudopw} uid=sudo,cn=sysaccounts,cn=etc,${dc}\"",
     unless    => "/bin/bash -c \"LDAPTLS_REQCERT=never /usr/bin/ldapsearch -x -H ldaps://${masterfqdn} -D uid=sudo,cn=sysaccounts,cn=etc,${dc} -w ${sudopw} -b cn=sysaccounts,cn=etc,${dc} uid=sudo\"",
     onlyif    => '/usr/sbin/ipactl status >/dev/null 2>&1',
-    logoutput => 'on_failure'
+    logoutput => 'on_failure',
   }
 
   exec { "setupnisdomain-${host}":
     command => "/bin/nisdomainname ${domain}",
     unless  => "/usr/bin/test $(/bin/nisdomainname) = ${domain}",
-    require => Exec["set-sudopw-${host}"]
+    require => Exec["set-sudopw-${host}"],
   }
 }

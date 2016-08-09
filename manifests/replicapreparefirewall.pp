@@ -1,6 +1,6 @@
 define ipa::replicapreparefirewall (
   $host   = $name,
-  $source = {}
+  $source = { }
 ) {
 
   firewall { "103 allow SSH from IPA master ${host}":
@@ -8,6 +8,6 @@ define ipa::replicapreparefirewall (
     action => 'accept',
     proto  => 'tcp',
     source => $source,
-    dport  => ['22']
+    dport  => ['22'],
   }
 }

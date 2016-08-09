@@ -2,7 +2,11 @@ require 'spec_helper'
 
 describe 'ipa', :type => :class do
   describe "on RedHat platform" do
-    let(:facts) { { :osfamily => 'RedHat', :ipa_adminhomedir => '/ipa/home' } }
+    let(:facts) { { :osfamily => 'RedHat',
+        :ipa_adminhomedir => '/ipa/home',
+        :ipaddress => '123.456.678.001',
+        :lsbdistdescription => ''
+      } }
 
     context 'with master => true' do
       describe "ipa" do

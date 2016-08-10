@@ -91,9 +91,6 @@ class ipa::master (
     realize Package['kstart']
   }
 
-  $dnsopt = undef
-  $forwarderopts = undef
-
   if $ipa::master::dns {
     if size($ipa::master::forwarders) > 0 {
       $forwarderopts = join(prefix($ipa::master::forwarders, '--forwarder '), ' ')
@@ -103,6 +100,9 @@ class ipa::master (
     }
     $dnsopt = '--setup-dns'
     realize Package['bind-dyndb-ldap']
+  } else {
+    $dnsopt = undef
+    $forwarderopts = undef
   }
 
   $ntpopt = $ipa::master::ntp ? {
